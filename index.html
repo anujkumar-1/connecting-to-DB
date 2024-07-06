@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Appointment App</title>
+</head>
+<body>
+    <h1>Book Appointment</h1>
+    <label form="form">Patient Details</label>
+    <form id="form" onsubmit="handleForm(event)">
+        <label for="name">Name:</label>
+        <Input type="text" id="name" name="u_name"></Input>
+        <br>
+
+        <label for="email">Email:</label>
+        <Input type="email"id="email" name="u_email"></Input>
+        <br>
+
+        <label for="ph-no">Phone Number:</label>
+        <Input type="tel" id="ph-no" name="u_ph_no"></Input>
+        <br>
+
+
+    <label>
+        <button type="submit">Submit</button>
+    </label>
+        
+    </form>
+
+    <ul id="ul"></ul>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js"></script>
+<script>
+    async function handleForm(event){
+        event.preventDefault();
+        console.log("hello")
+        let name = event.target.u_name.value;
+        let email = event.target.u_email.value;
+        let ph_no = event.target.u_ph_no.value;
+        let data = {
+            u_name: name,
+            u_email: email,
+            u_ph_no: ph_no
+        }
+        console.log(data)
+
+        try {
+            const response = await axios.post("http://localhost:3000/postusers", data)
+            const newdata = response.data.newUserDetails
+            showUserOnScreen(newdata)
+            
+        } catch (error) {
+            console.log(error)
+        }
+       
+        // console.log(response)
+        
+        
+        const alldata = await axios.get("http://localhost:3000/getAllUsers")
+        // console.log(alldata.data.allUserDetails)
+        
+        
+        
+        
+        // deleting element
+        
+        ul.addEventListener("click", async(event)=>{
+            var textArr
+            if(event.target.classList.contains("delete-btn")){
+                const liToDelete = event.target.parentElement;
+                console.log(liToDelete)
+                ul.removeChild(liToDelete);
+
+                const text = liToDelete.firstChild.textContent;
+                textArr = text.split(" - ")
+                
+                
+            }
+            console.log(textArr)
+
+            let idx = -1
+            for(let i=0; i<alldata.data.allUserDetails.length; i++){
+                if(alldata.data.allUserDetails[i].name === textArr[0] 
+                && alldata.data.allUserDetails[i].email === textArr[1] 
+                && alldata.data.allUserDetails[i].phonenumber === textArr[2]
+                ){
+                    idx = i
+                }
+            }
+           
+            const id = alldata.data.allUserDetails[idx].id
+            console.log(id)
+            const postToDelete = await axios.post("http://localhost:3000/deleteUsers/:id")
+            // console.log(postToDelete)
+            
+        })
+        
+
+        // console.log(alldata.data.allUserDetails[idx])
+        
+    }
+
+    function showUserOnScreen(bookingData){
+        console.log(bookingData)
+        const ulTable = document.getElementById('ul');
+        const li= document.createElement('li');
+        li.className = 'patient-details';
+        const liText = document.createTextNode(`${bookingData.name} - ${bookingData.email} - ${bookingData.phonenumber}`);
+        li.appendChild(liText);
+        ulTable.appendChild(li)
+
+        // creating delete button 
+        const delBtn= document.createElement('button');
+        delBtn.className = 'delete-btn';
+        const delBtnText = document.createTextNode('delete');
+        delBtn.appendChild(delBtnText);
+        li.appendChild(delBtn);
+    }
+
+    document.addEventListener("DOMContentLoaded", function(event){
+            
+        axios.get("http://localhost:3000/getAllUsers")
+        .then(function(response) {
+            for(let i=0; i<response.data.allUserDetails.length; i++)
+            {
+                tablefunc(response.data.allUserDetails[i])
+            }
+        }).catch(function(error) {
+            console.log(error)
+        })
+    })
+        
+        
+
+    function tablefunc(userData) {
+        const ulTable = document.getElementById('ul');
+        const li= document.createElement('li');
+        li.className = 'patient-details';
+        const liText = document.createTextNode(`${userData.name} - ${userData.email} - ${userData.phonenumber}`);
+        li.appendChild(liText);
+        ulTable.appendChild(li);
+    
+        // creating delete button element for Table 1 li element as its children
+        const delBtn= document.createElement('button');
+        delBtn.className = 'delete-btn';
+        const delBtnText = document.createTextNode('delete');
+        delBtn.appendChild(delBtnText);
+        li.appendChild(delBtn);
+    }
+
+
+</script>
+</html>
